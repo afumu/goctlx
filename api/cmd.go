@@ -47,6 +47,12 @@ var (
 		RunE:  gogen.GoCommand,
 	}
 
+	goxCmd = &cobra.Command{
+		Use:   "gox",
+		Short: "Generate go files for provided api in api file",
+		RunE:  gogen.GoxCommand,
+	}
+
 	newCmd = &cobra.Command{
 		Use:     "new",
 		Short:   "Fast create api service",
@@ -130,6 +136,9 @@ func init() {
 	goCmd.Flags().StringVar(&gogen.VarStringStyle, "style", "gozero", "The file naming format,"+
 		" see [https://github.com/zeromicro/go-zero/blob/master/tools/goctl/config/readme.md]")
 
+	goxCmd.Flags().StringVar(&gogen.VarStringDir, "dir", "", "The target dir")
+	goxCmd.Flags().StringVar(&gogen.VarStringAPI, "api", "", "The api file")
+
 	javaCmd.Flags().StringVar(&javagen.VarStringDir, "dir", "", "The target dir")
 	javaCmd.Flags().StringVar(&javagen.VarStringAPI, "api", "", "The api file")
 
@@ -168,6 +177,7 @@ func init() {
 	Cmd.AddCommand(docCmd)
 	Cmd.AddCommand(formatCmd)
 	Cmd.AddCommand(goCmd)
+	Cmd.AddCommand(goxCmd)
 	Cmd.AddCommand(javaCmd)
 	Cmd.AddCommand(ktCmd)
 	Cmd.AddCommand(newCmd)

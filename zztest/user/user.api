@@ -1,0 +1,43 @@
+type (
+	LoginReq {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+
+	LoginReply {
+		Id           int64  `json:"id"`
+		Name         string `json:"name"`
+		Gender       string `json:"gender"`
+		AccessToken  string `json:"accessToken"`
+		AccessExpire int64  `json:"accessExpire"`
+		RefreshAfter int64  `json:"refreshAfter"`
+	}
+
+	UserParam {
+		Username string `form:"username"`
+	}
+
+	User {
+		Id         int64  `json:"id"`
+		Number     string `json:"number"`   // 学号
+		Name       string `json:"name"`     // 用户名称
+		Password   string `json:"password"` // 用户密码
+		Gender     string `json:"gender"`   // 男｜女｜未公开
+		CreateTime int64  `json:"create_time"`
+		UpdateTime int64  `json:"update_time"`
+	}
+
+	Result {
+		User []*User `json:"user"`
+	}
+)
+
+@server(
+	group:role
+	jwt: JwtAuth
+	model: SysRole
+)
+service user-api {
+	@handler login
+	post /user/login (LoginReq) returns (LoginReply)
+}

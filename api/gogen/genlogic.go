@@ -18,10 +18,25 @@ import (
 //go:embed logic.tpl
 var logicTemplate string
 
+//go:embed zaddLogic.tpl
+var addLogicTemplate string
+
 func genLogic(dir, rootPkg string, cfg *config.Config, api *spec.ApiSpec) error {
 	for _, g := range api.Service.Groups {
 		for _, r := range g.Routes {
 			err := genLogicByRoute(dir, rootPkg, cfg, g, r)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func genLogicx(dir, rootPkg string, cfg *config.Config, api *spec.ApiSpec) error {
+	for _, g := range api.Service.Groups {
+		for _, r := range g.Routes {
+			err := genLogicByRoutex(dir, rootPkg, cfg, g, r)
 			if err != nil {
 				return err
 			}
@@ -70,6 +85,52 @@ func genLogicByRoute(dir, rootPkg string, cfg *config.Config, group spec.Group, 
 			"responseType": responseString,
 			"returnString": returnString,
 			"request":      requestString,
+		},
+	})
+}
+
+func genLogicByRoutex(dir, rootPkg string, cfg *config.Config, group spec.Group, route spec.Route) error {
+	logic := getLogicName(route)
+	goFile, err := format.FileNamingFormat(cfg.NamingFormat, logic)
+	if err != nil {
+		return err
+	}
+
+	imports := genLogicImports(route, rootPkg)
+	var responseString string
+	var returnString string
+	var requestString string
+	if len(route.ResponseTypeName()) > 0 {
+		resp := responseGoTypeName(route, typesPacket)
+		responseString = "(resp " + resp + ", err error)"
+		returnString = "return"
+	} else {
+		responseString = "error"
+		returnString = "return nil"
+	}
+	if len(route.RequestTypeName()) > 0 {
+		requestString = "req *" + requestGoTypeName(route, typesPacket)
+	}
+
+	subDir := getLogicFolderPath(group, route)
+	return genFile(fileGenConfig{
+		dir:             dir,
+		subdir:          subDir,
+		filename:        goFile + ".go",
+		templateName:    "addLogicTemplate",
+		category:        category,
+		templateFile:    addLogicTemplateFile,
+		builtinTemplate: addLogicTemplate,
+		data: map[string]string{
+			"pkgName":      subDir[strings.LastIndex(subDir, "/")+1:],
+			"imports":      imports,
+			"logic":        strings.Title(logic),
+			"function":     strings.Title(strings.TrimSuffix(logic, "Logic")),
+			"responseType": responseString,
+			"returnString": returnString,
+			"request":      requestString,
+			"modelNaming":  "sysRole",
+			"modelName":    "SysRole",
 		},
 	})
 }

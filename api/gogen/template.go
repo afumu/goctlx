@@ -13,6 +13,7 @@ const (
 	etcTemplateFile             = "etc.tpl"
 	handlerTemplateFile         = "handler.tpl"
 	logicTemplateFile           = "logic.tpl"
+	addLogicTemplateFile        = "zaddLogic.tpl"
 	mainTemplateFile            = "main.tpl"
 	middlewareImplementCodeFile = "middleware.tpl"
 	routesTemplateFile          = "routes.tpl"
@@ -26,6 +27,7 @@ var templates = map[string]string{
 	etcTemplateFile:             etcTemplate,
 	handlerTemplateFile:         handlerTemplate,
 	logicTemplateFile:           logicTemplate,
+	addLogicTemplateFile:        addLogicTemplate,
 	mainTemplateFile:            mainTemplate,
 	middlewareImplementCodeFile: middlewareImplementCode,
 	routesTemplateFile:          routesTemplate,

@@ -41,6 +41,23 @@ var (
 	VarStringStyle string
 )
 
+// GoxCommand gen go project files from command line
+func GoxCommand(_ *cobra.Command, _ []string) error {
+	apiFile := VarStringAPI
+	dir := VarStringDir
+	namingStyle := "goZero"
+	if len(apiFile) == 0 {
+		return errors.New("missing -api")
+	}
+	if len(dir) == 0 {
+		return errors.New("missing -dir")
+	}
+
+	fmt.Println("gocltx: ", apiFile, dir, namingStyle)
+
+	return DoGenProjectx(apiFile, dir, namingStyle)
+}
+
 // GoCommand gen go project files from command line
 func GoCommand(_ *cobra.Command, _ []string) error {
 	apiFile := VarStringAPI
@@ -99,6 +116,50 @@ func DoGenProject(apiFile, dir, style string) error {
 	logx.Must(genRoutes(dir, rootPkg, cfg, api))
 	logx.Must(genHandlers(dir, rootPkg, cfg, api))
 	logx.Must(genLogic(dir, rootPkg, cfg, api))
+	logx.Must(genMiddleware(dir, cfg, api))
+
+	if err := backupAndSweep(apiFile); err != nil {
+		return err
+	}
+
+	if err := apiformat.ApiFormatByPath(apiFile, false); err != nil {
+		return err
+	}
+
+	fmt.Println(aurora.Green("Done."))
+	return nil
+}
+
+// DoGenProjectx gen go project files with api file
+func DoGenProjectx(apiFile, dir, style string) error {
+	api, err := parser.Parse(apiFile)
+	if err != nil {
+		return err
+	}
+
+	if err := api.Validate(); err != nil {
+		return err
+	}
+
+	cfg, err := config.NewConfig(style)
+	if err != nil {
+		return err
+	}
+
+	logx.Must(pathx.MkdirIfNotExist(dir))
+	rootPkg, err := golang.GetParentPackage(dir)
+	if err != nil {
+		return err
+	}
+
+	logx.Must(genEtc(dir, cfg, api))
+	logx.Must(genConfig(dir, cfg, api))
+	logx.Must(genMain(dir, rootPkg, cfg, api))
+	logx.Must(genServiceContext(dir, rootPkg, cfg, api))
+	logx.Must(genTypes(dir, cfg, api))
+	logx.Must(genRoutes(dir, rootPkg, cfg, api))
+	logx.Must(genHandlers(dir, rootPkg, cfg, api))
+	logx.Must(genLogicx(dir, rootPkg, cfg, api))
 	logx.Must(genMiddleware(dir, cfg, api))
 
 	if err := backupAndSweep(apiFile); err != nil {
